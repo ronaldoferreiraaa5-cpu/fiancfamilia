@@ -1,53 +1,89 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Finanças da Família</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
-:root{--bg:#f6f7fb;--card:#fff;--ink:#182033;--muted:#6b7280;--line:#e5e7eb;--blue:#3659e3;--nav:#111827;--red:#c9364f}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--ink)}button,input,select{font:inherit}.hidden{display:none!important}.app{display:grid;grid-template-columns:235px 1fr;min-height:100vh}.side{background:var(--nav);color:#fff;padding:22px;position:sticky;top:0;height:100vh}.brand{font-weight:800;font-size:20px}.brand small{display:block;color:#94a3b8;font-size:12px;font-weight:500;margin-top:6px}.nav{display:grid;gap:7px;margin-top:24px}.nav button{border:0;background:transparent;color:#cbd5e1;text-align:left;padding:11px;border-radius:10px;cursor:pointer}.nav button.active,.nav button:hover{background:#263244;color:#fff}.main{padding:26px;min-width:0}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.top h1{margin:0;font-size:28px}.sub{color:var(--muted);font-size:13px}.btn{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:10px;font-weight:700;cursor:pointer}.primary{background:var(--blue);border-color:var(--blue);color:#fff}.danger{color:var(--red)}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}.metric .label{font-size:12px;color:var(--muted)}.metric .value{font-size:26px;font-weight:800;margin-top:5px}.hero{background:#172033;color:#fff}.hero .label{color:#cbd5e1}.section{display:none}.section.active{display:block}.head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:22px 0 10px}.head h2{margin:0;font-size:19px}.table{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:11px 13px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}th{font-size:11px;text-transform:uppercase;color:var(--muted);background:#fafafa}.months{display:grid;grid-template-columns:repeat(7,minmax(110px,1fr));gap:8px}.month{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}.month b{font-size:12px}.month div{font-size:11px;color:var(--muted);margin-top:5px}.month strong{display:block;margin-top:7px}.formula{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5}.formula b{font-weight:800}.pos{color:var(--blue)}.neg{color:var(--red)}.login{max-width:420px;margin:9vh auto}.field{display:grid;gap:5px}.field label{font-size:12px;color:var(--muted);font-weight:700}.field input,.field select{padding:10px;border:1px solid var(--line);border-radius:9px;width:100%}.form{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.modal{position:fixed;inset:0;background:#0007;display:none;place-items:center;padding:20px;z-index:10}.modal.show{display:grid}.box{background:#fff;border-radius:16px;padding:20px;width:min(720px,100%);max-height:90vh;overflow:auto}
-@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.months{grid-template-columns:repeat(3,1fr)}.form{grid-template-columns:repeat(2,1fr)}}@media(max-width:650px){.app{display:block}.side{height:auto;position:static}.nav{display:flex;overflow:auto}.main{padding:14px}.grid{grid-template-columns:1fr}.months{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
-</style></head><body>
-<div id="loginView" class="login card"><h1>Finanças da Família</h1><p class="sub">Entre para acessar o planejamento financeiro familiar.</p><div class="field"><label>E-mail</label><input id="email" type="email"></div><div class="field" style="margin-top:10px"><label>Senha</label><input id="password" type="password"></div><button class="btn primary" style="width:100%;margin-top:12px" onclick="signIn()">Entrar</button><button class="btn" style="width:100%;margin-top:8px" onclick="signUp()">Criar primeiro acesso</button><button id="resendBtn" class="btn hidden" style="width:100%;margin-top:8px" onclick="resendConfirmation()">Reenviar e-mail de confirmação</button><p id="authMsg" class="sub"></p></div>
-<div id="appView" class="app hidden"><aside class="side"><div class="brand">Finanças da Família<small>Nov/26 → Dez/27</small></div><div id="nav" class="nav"></div></aside><main class="main"><div class="top"><div><h1 id="title">Visão geral</h1><div class="sub">Planejamento e projeção da família</div></div><button class="btn" onclick="signOut()">Sair</button></div><section id="dashboard" class="section active"></section><section id="cards" class="section"></section><section id="fixed" class="section"></section><section id="variable" class="section"></section><section id="income" class="section"></section><section id="debts" class="section"></section><section id="projection" class="section"></section></main></div>
-<div id="modal" class="modal"><div class="box"><div id="modalContent"></div></div></div>
-<script>
-const sb=supabase.createClient('https://fafrrozjzjucbbbitfrr.supabase.co','sb_publishable_2rmoOvGT-Uw0YHHGp9eazQ_WVGQcQeG');
-const START='2026-11',END='2027-12',months=[];for(let d=new Date(2026,10,1);d<=new Date(2027,11,1);d.setMonth(d.getMonth()+1))months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
-const money=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v||0));const ml=m=>{let[y,x]=m.split('-');return new Date(+y,+x-1,1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})};
-let user=null,dashboardCardMonth=START,data={settings:{cash:0},cards:[],fixed:[],variable:[],income:[],debts:[]};const navs=[['dashboard','Visão geral'],['cards','Cartão'],['fixed','Gastos fixos'],['variable','Gastos variáveis'],['income','Caixa & receitas'],['debts','Dívidas'],['projection','Projeção mensal']];
-function renderNav(){nav.innerHTML=navs.map((x,i)=>'<button class="'+(i?'':'active')+'" onclick="go(\''+x[0]+'\',this)">'+x[1]+'</button>').join('')}function go(id,b){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');title.textContent=navs.find(x=>x[0]===id)[1];render()}
-function addMonth(m,n){let[y,x]=m.split('-').map(Number),d=new Date(y,x-1+n,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}function cardRows(){let a=[];data.cards.forEach(c=>{for(let i=0;i<c.installments;i++){let m=addMonth(c.first_month,i);if(m>=START&&m<=END)a.push({...c,month:m,installment:i+1,value:Number(c.total)/c.installments})}});return a}const sum=(a,k)=>a.reduce((s,x)=>s+Number(x[k]||0),0);
-function fixedAt(m){return sum(data.fixed.filter(x=>x.start_month<=m&&(!x.end_month||x.end_month>=m)),'amount')}function variableAt(m){return sum(data.variable.filter(x=>x.month===m),'amount')}function incomeAt(m){return sum(data.income.filter(x=>{if(x.recurring){if(!(x.month<=m&&(!x.end_month||x.end_month>=m)))return false;if(x.already_in_cash&&m===x.month)return false;return true}return x.month===m&&!x.already_in_cash}),'amount')}function debtAt(m){return sum(data.debts.filter(x=>x.due_month===m&&!x.paid),'amount')}function cardsAt(m){return cardRows().filter(x=>x.month===m).reduce((s,x)=>s+x.value,0)}function setDashboardCardMonth(m){dashboardCardMonth=m;render()}function monthly(m){let inc=incomeAt(m),fix=fixedAt(m),car=cardsAt(m),vari=variableAt(m),debt=debtAt(m);return{inc,fix,car,vari,debt,out:fix+car+vari+debt,net:inc-fix-car-vari-debt}}function proj(){let cash=Number(data.settings.cash||0);return months.map(m=>{let opening=cash,x=monthly(m);cash+=x.net;return{month:m,opening,...x,cash}})}
-function h(t,d,type,label='Adicionar'){return '<div class="head"><div><h2>'+esc(t)+'</h2><div class="sub">'+esc(d)+'</div></div><button type="button" class="btn primary" onclick="openForm(\''+type+'\')">+ '+esc(label)+'</button></div>'}function esc(v=''){return String(v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
-function showError(error,context='operação'){console.error(context,error);alert('Não foi possível concluir esta '+context+'. '+(error?.message||'Tente novamente.'))}
-function act(t,id){return '<button type="button" class="btn" onclick="editItem(\''+t+'\',\''+id+'\')">Editar</button> <button type="button" class="btn danger" onclick="removeItem(\''+t+'\',\''+id+'\')">Excluir</button>'}function table(t,heads,arr,map){return '<div class="table"><table><thead><tr>'+heads.map(x=>'<th>'+x+'</th>').join('')+'<th></th></tr></thead><tbody>'+(arr.map(x=>'<tr>'+map(x).map(v=>'<td>'+v+'</td>').join('')+'<td>'+act(t,x.id)+'</td></tr>').join('')||'<tr><td colspan="'+(heads.length+1)+'">Nenhum item cadastrado.</td></tr>')+'</tbody></table></div>'}
-function render(){
-let p=proj(),
-    totalInc=months.reduce((s,m)=>s+incomeAt(m),0),
-    totalOut=months.reduce((s,m)=>s+monthly(m).out,0),
-    totalNet=totalInc-totalOut,
-    finalCash=p.length?p[p.length-1].cash:Number(data.settings.cash||0),
-    avg=months.slice(0,3).map(m=>monthly(m).out).reduce((a,b)=>a+b,0)/3,
-    run=avg?Number(data.settings.cash||0)/avg:0,
-    cardCount=cardRows().filter(x=>x.month===dashboardCardMonth).length;
-dashboard.innerHTML=
-'<div class="grid">'+
-'<div class="card metric hero"><div class="label">Caixa atual</div><div class="value">'+money(data.settings.cash)+'</div><div class="sub" style="color:#cbd5e1">Dinheiro disponível agora</div></div>'+
-'<div class="card metric"><div class="label">Receitas futuras previstas</div><div class="value pos">'+money(totalInc)+'</div><div class="sub">Valores que ainda entram até dez/27</div></div>'+
-'<div class="card metric"><div class="label">Despesas futuras previstas</div><div class="value neg">'+money(totalOut)+'</div><div class="sub">Fixos + cartão + variáveis + dívidas</div></div>'+
-'<div class="card metric"><div class="label">Resultado líquido do período</div><div class="value '+(totalNet>=0?'pos':'neg')+'">'+money(totalNet)+'</div><div class="sub">Receitas futuras menos despesas futuras</div></div>'+
-'<div class="card metric"><div class="label">Caixa projetado final</div><div class="value '+(finalCash>=0?'pos':'neg')+'">'+money(finalCash)+'</div><div class="sub">Saldo estimado ao fim de dez/27</div></div>'+
-'<div class="card metric"><div class="label">Cartão a pagar</div><select aria-label="Selecionar mês da fatura" onchange="setDashboardCardMonth(this.value)" style="width:100%;margin-top:8px;padding:8px;border:1px solid var(--line);border-radius:9px;background:#fff">'+months.map(m=>'<option value="'+m+'" '+(m===dashboardCardMonth?'selected':'')+'>'+ml(m)+'</option>').join('')+'</select><div class="value neg" style="margin-top:10px">'+money(cardsAt(dashboardCardMonth))+'</div><div class="sub">'+cardCount+' parcela(s) previstas em '+ml(dashboardCardMonth)+'</div></div>'+
-'<div class="card metric"><div class="label">Dívidas abertas</div><div class="value neg">'+money(sum(data.debts.filter(x=>!x.paid),'amount'))+'</div><div class="sub">Total ainda marcado como em aberto</div></div>'+
-'<div class="card metric"><div class="label">Cobertura estimada</div><div class="value">'+run.toFixed(1)+' meses</div><div class="sub">Caixa atual ÷ média das saídas dos 3 primeiros meses</div></div>'+
-'</div>'+
-'<div class="formula"><b>Como a projeção fecha:</b> '+money(data.settings.cash)+' de caixa atual <b>+ '+money(totalInc)+'</b> de receitas futuras <b>− '+money(totalOut)+'</b> de despesas futuras = <b class="'+(finalCash>=0?'pos':'neg')+'">'+money(finalCash)+'</b> de caixa projetado final.</div>'+
-'<div class="head"><h2>Linha do tempo</h2></div>'+
-'<div class="months">'+p.map(x=>'<div class="month"><b>'+ml(x.month)+'</b><div>Caixa inicial: '+money(x.opening)+'</div><div>Entradas: '+money(x.inc)+'</div><div>Saídas: '+money(x.out)+'</div><div>Saldo do mês: '+money(x.net)+'</div><div style="margin-top:8px;font-size:10px;text-transform:uppercase;letter-spacing:.04em">Caixa final do mês</div><strong class="'+(x.cash>=0?'pos':'neg')+'">'+money(x.cash)+'</strong></div>').join('')+'</div>';
-let cr=cardRows();cards.innerHTML=h('Cartão','Compras parceladas são projetadas automaticamente.','cards','Nova compra')+'<div class="table"><table><thead><tr><th>Compra</th><th>Total</th><th>Parcela</th><th>Mês</th><th>Valor</th><th></th></tr></thead><tbody>'+(cr.map(x=>'<tr><td>'+esc(x.description)+'</td><td>'+money(x.total)+'</td><td>'+x.installment+'/'+x.installments+'</td><td>'+ml(x.month)+'</td><td>'+money(x.value)+'</td><td>'+(x.installment===1?act('cards',x.id):'')+'</td></tr>').join('')||'<tr><td colspan="6">Nenhuma compra.</td></tr>')+'</tbody></table></div>';fixed.innerHTML=h('Gastos fixos','Recorrências mensais.','fixed')+table('fixed',['Descrição','Valor','Início','Fim'],data.fixed,x=>[esc(x.description),money(x.amount),ml(x.start_month),x.end_month?ml(x.end_month):'Contínuo']);variable.innerHTML=h('Gastos variáveis','Despesas pontuais por mês.','variable')+table('variable',['Descrição','Valor','Mês'],data.variable,x=>[esc(x.description),money(x.amount),ml(x.month)]);income.innerHTML='<div class="grid"><div class="card metric"><div class="label">Valor em caixa</div><div class="value">'+money(data.settings.cash)+'</div><button class="btn" onclick="editCash()">Editar caixa</button></div></div>'+h('Receitas','Salários, extras e outros valores.','income','Nova receita')+table('income',['Descrição','Tipo','Recorrência','Situação','Valor','Início','Fim'],data.income,x=>[esc(x.description),esc(({salary:'Salário',extra:'Extra',other:'Outro'}[x.kind]||x.kind)),x.recurring?'Contínua':'Pontual',x.already_in_cash?'Já está no caixa':'A receber',money(x.amount),ml(x.month),x.recurring?(x.end_month?ml(x.end_month):'Até dez/27'):'—']);debts.innerHTML=h('Dívidas','Compromissos previstos.','debts','Nova dívida')+table('debts',['Descrição','Valor','Mês','Status'],data.debts,x=>[esc(x.description),money(x.amount),ml(x.due_month),x.paid?'Pago':'Em aberto']);projection.innerHTML='<div class="head"><h2>Projeção mensal</h2></div><div class="table"><table><thead><tr><th>Mês</th><th>Caixa inicial</th><th>Receitas</th><th>Fixos</th><th>Cartão</th><th>Variáveis</th><th>Dívidas</th><th>Saldo do mês</th><th>Caixa final</th></tr></thead><tbody>'+p.map(x=>'<tr><td>'+ml(x.month)+'</td><td>'+money(x.opening)+'</td><td>'+money(x.inc)+'</td><td>'+money(x.fix)+'</td><td>'+money(x.car)+'</td><td>'+money(x.vari)+'</td><td>'+money(x.debt)+'</td><td>'+money(x.net)+'</td><td>'+money(x.cash)+'</td></tr>').join('')+'</tbody></table></div>'}
-function opts(sel){return months.map(m=>'<option value="'+m+'" '+(m===sel?'selected':'')+'>'+ml(m)+'</option>').join('')}function fld(n,l,v='',type='text'){return '<div class="field"><label>'+esc(l)+'</label><input name="'+esc(n)+'" type="'+esc(type)+'" value="'+esc(v??'')+'" '+(type==='number'?'step="0.01" min="0"':'')+' required></div>'}function mon(n,l,v,optional=false){return '<div class="field"><label>'+l+'</label><select name="'+n+'" '+(optional?'':'required')+'>'+(optional?'<option value="">Contínuo</option>':'')+opts(v)+'</select></div>'}function sel(n,l,o,v){return '<div class="field"><label>'+l+'</label><select name="'+n+'">'+o.map(x=>'<option value="'+x[0]+'" '+(x[0]===v?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></div>'}
-function openForm(t,item={}){let f='';if(t==='cards')f=fld('description','Descrição',item.description)+fld('total','Valor total',item.total,'number')+sel('installments','Pagamento',Array.from({length:24},(_,i)=>[String(i+1),i?(i+1)+'x':'À vista / 1x']),String(item.installments||1))+mon('first_month','Primeira fatura',item.first_month||START);if(t==='fixed')f=fld('description','Descrição',item.description)+fld('amount','Valor mensal',item.amount,'number')+mon('start_month','Começa em',item.start_month||START)+mon('end_month','Termina em',item.end_month||'',true);if(t==='variable')f=fld('description','Descrição',item.description)+fld('amount','Valor',item.amount,'number')+mon('month','Mês',item.month||START);if(t==='income')f=fld('description','Descrição',item.description)+sel('kind','Tipo',[['salary','Salário'],['extra','Extra'],['other','Outro']],item.kind||'salary')+sel('recurring','Recorrência',[['false','Pontual'],['true','Contínua']],String(!!item.recurring))+sel('already_in_cash','Situação',[['false','A receber'],['true','Já está no caixa']],String(!!item.already_in_cash))+fld('amount','Valor',item.amount,'number')+mon('month',item.recurring?'Começa em':'Mês de recebimento',item.month||START)+mon('end_month','Termina em (opcional)',item.end_month||'',true);if(t==='debts')f=fld('description','Descrição',item.description)+fld('amount','Valor',item.amount,'number')+mon('due_month','Mês',item.due_month||START)+sel('paid','Status',[['false','Em aberto'],['true','Pago']],String(!!item.paid));modalContent.innerHTML='<h3>'+(item.id?'Editar':'Adicionar')+'</h3><form class="form" onsubmit="save(event,\''+t+'\',\''+(item.id||'')+'\')">'+f+'<div style="grid-column:1/-1;text-align:right"><button type="button" class="btn" onclick="closeM()">Cancelar</button> <button class="btn primary">Salvar</button></div></form>';modal.classList.add('show')}
-function closeM(){modal.classList.remove('show')}function editItem(t,id){openForm(t,data[t].find(x=>x.id===id))}async function save(e,t,id){e.preventDefault();if(!user)return showError(new Error('Sessão não encontrada. Entre novamente.'),'operação');let btn=e.submitter;if(btn){btn.disabled=true;btn.textContent='Salvando...'}try{let o=Object.fromEntries(new FormData(e.target));if('total'in o)o.total=Number(o.total);if('amount'in o)o.amount=Number(o.amount);if('installments'in o)o.installments=Number(o.installments);if('paid'in o)o.paid=o.paid==='true';if('recurring'in o)o.recurring=o.recurring==='true';if('already_in_cash'in o)o.already_in_cash=o.already_in_cash==='true';if(o.recurring===false)o.end_month=null;o.user_id=user.id;let q=id?sb.from(t).update(o).eq('id',id):sb.from(t).insert(o);let{error}=await q;if(error)throw error;closeM();await load();render()}catch(err){showError(err,'operação')}finally{if(btn){btn.disabled=false;btn.textContent='Salvar'}}}
-async function removeItem(t,id){if(!confirm('Excluir este item?'))return;try{let{error}=await sb.from(t).delete().eq('id',id);if(error)throw error;await load();render()}catch(err){showError(err,'exclusão')}}
-function editCash(){modalContent.innerHTML='<h3>Valor em caixa</h3><form onsubmit="saveCash(event)">'+fld('cash','Saldo disponível',data.settings.cash,'number')+'<div style="text-align:right;margin-top:12px"><button type="button" class="btn" onclick="closeM()">Cancelar</button> <button class="btn primary">Salvar</button></div></form>';modal.classList.add('show')}async function saveCash(e){e.preventDefault();let cash=Number(new FormData(e.target).get('cash'));let{error}=await sb.from('settings').upsert({user_id:user.id,cash});if(error)return alert(error.message);closeM();await load();render()}
-async function load(){for(const t of ['cards','fixed','variable','income','debts']){let{data:r,error}=await sb.from(t).select('*').order('created_at');if(error){console.error('Falha ao carregar '+t,error);data[t]=[]}else data[t]=r||[]}let{data:s,error}=await sb.from('settings').select('*').maybeSingle();if(error)console.error('Falha ao carregar caixa',error);data.settings=s||{cash:0}}function validateCredentials(){const e=email.value.trim(),p=password.value;if(!e){authMsg.textContent='Digite seu e-mail.';email.focus();return null}if(!p){authMsg.textContent='Digite uma senha.';password.focus();return null}if(p.length<6){authMsg.textContent='A senha precisa ter pelo menos 6 caracteres.';password.focus();return null}return{email:e,password:p}}
-async function signIn(){const cred=validateCredentials();if(!cred)return;authMsg.textContent='Entrando...';resendBtn.classList.add('hidden');let{data:r,error}=await sb.auth.signInWithPassword(cred);if(error){if(error.message==='Email not confirmed'){authMsg.textContent='Seu e-mail ainda não foi confirmado. Abra o e-mail enviado pelo sistema e clique no link de confirmação.';resendBtn.classList.remove('hidden')}else authMsg.textContent='Não foi possível entrar: '+error.message;return}user=r.user;boot()}
-async function signUp(){const cred=validateCredentials();if(!cred)return;authMsg.textContent='Criando acesso...';resendBtn.classList.add('hidden');let{data:r,error}=await sb.auth.signUp(cred);if(error){authMsg.textContent=error.message==='Anonymous sign-ins are disabled'?'Preencha e-mail e senha para criar seu acesso.':'Não foi possível criar o acesso: '+error.message;return}authMsg.textContent=r.session?'Acesso criado e login realizado.':'Cadastro criado. Verifique seu e-mail para confirmar o acesso.';if(!r.session)resendBtn.classList.remove('hidden');if(r.session){user=r.user;boot()}}
-async function resendConfirmation(){const e=email.value.trim();if(!e){authMsg.textContent='Digite seu e-mail para reenviar a confirmação.';email.focus();return}authMsg.textContent='Reenviando e-mail de confirmação...';const{error}=await sb.auth.resend({type:'signup',email:e,options:{emailRedirectTo:window.location.origin+window.location.pathname}});if(error){authMsg.textContent='Não foi possível reenviar agora: '+error.message;return}authMsg.textContent='E-mail de confirmação reenviado. Verifique sua caixa de entrada e o spam.';resendBtn.classList.add('hidden')}async function signOut(){await sb.auth.signOut();location.reload()}async function boot(){loginView.classList.add('hidden');appView.classList.remove('hidden');renderNav();await load();render()} (async()=>{let{data:{session}}=await sb.auth.getSession();if(session){user=session.user;boot()}})();
-</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#00539C">
+  <title>FINANOUSE — Finanças em família</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div id="authView" class="auth-shell">
+    <section class="auth-brand">
+      <div class="logo"><span class="logo-mark">F</span> FINANOUSE</div>
+      <div class="auth-copy">
+        <div class="eyebrow" style="color:#FFD662">Finanças em família</div>
+        <h1>Organize hoje.<br>Construa o amanhã, <span>juntos.</span></h1>
+        <p>Clareza para as decisões de hoje e planejamento para as conquistas de amanhã.</p>
+        <div class="auth-points">
+          <span class="auth-point">◉ Visão da família</span>
+          <span class="auth-point">◎ Planejamento simples</span>
+          <span class="auth-point">◇ Dados protegidos</span>
+        </div>
+      </div>
+      <small style="position:relative;z-index:1;opacity:.75">FINANOUSE V2 • Ambiente de homologação</small>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-card">
+        <div class="eyebrow">Bem-vindo</div>
+        <h2>Acesse sua família</h2>
+        <p class="muted">Entre com o acesso criado pelo administrador.</p>
+        <div class="field"><label>E-mail</label><input id="email" class="input" type="email" autocomplete="email"></div>
+        <div class="field"><label>Senha</label><input id="password" class="input" type="password" autocomplete="current-password"></div>
+        <button class="btn btn-primary btn-lg w-full" style="margin-top:18px" onclick="signIn()">Entrar</button>
+        <button class="btn btn-soft w-full" style="margin-top:10px" onclick="resetPassword()">Esqueci minha senha</button>
+        <p id="authMsg" class="muted" style="font-size:12px;margin-top:14px"></p>
+      </div>
+    </section>
+  </div>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="logo"><span class="logo-mark">F</span> FINANOUSE</div>
+      <div class="family-pill"><small>Família ativa</small><strong id="familyName">Carregando...</strong></div>
+      <nav id="nav" class="nav"></nav>
+      <div class="sidebar-bottom">
+        <div class="quick-card">
+          <strong>Finanças organizadas.</strong>
+          <p>Mais clareza para decidir e conquistar juntos.</p>
+          <button class="btn btn-accent" onclick="openQuickTransaction()">＋ Nova transação</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="search">⌕ <input id="globalSearch" placeholder="Buscar transações, dívidas ou metas..." oninput="runSearch(this.value)"></div>
+        <div class="top-actions">
+          <button class="icon-btn" title="Atualizar" onclick="loadAll()">↻</button>
+          <div class="profile">
+            <span id="avatar" class="avatar">R</span>
+            <div><strong id="profileName">Usuário</strong><small id="profileRole">Membro</small></div>
+          </div>
+          <button class="icon-btn" title="Sair" onclick="signOut()">↪</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section id="dashboard" class="section active"></section>
+        <section id="transactions" class="section"></section>
+        <section id="planning" class="section"></section>
+        <section id="goals" class="section"></section>
+        <section id="debts" class="section"></section>
+        <section id="accounts" class="section"></section>
+        <section id="reports" class="section"></section>
+        <section id="members" class="section"></section>
+        <section id="admin" class="section"></section>
+        <section id="settingsPage" class="section"></section>
+      </div>
+    </main>
+
+    <nav id="mobileNav" class="mobile-nav"></nav>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="assets/app.js"></script>
+</body>
+</html>
