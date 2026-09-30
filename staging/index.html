@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#00539C">
+  <title>FINANOUSE — Finanças em família</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div id="authView" class="auth-shell">
+    <section class="auth-brand">
+      <div class="logo"><span class="logo-mark">F</span> FINANOUSE</div>
+      <div class="auth-copy">
+        <div class="eyebrow" style="color:#FFD662">Finanças em família</div>
+        <h1>Organize hoje.<br>Construa o amanhã, <span>juntos.</span></h1>
+        <p>Clareza para as decisões de hoje e planejamento para as conquistas de amanhã.</p>
+        <div class="auth-points">
+          <span class="auth-point">◉ Visão da família</span>
+          <span class="auth-point">◎ Planejamento simples</span>
+          <span class="auth-point">◇ Dados protegidos</span>
+        </div>
+      </div>
+      <small style="position:relative;z-index:1;opacity:.75">FINANOUSE V2 • Ambiente de homologação</small>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-card">
+        <div class="eyebrow">Bem-vindo</div>
+        <h2>Acesse sua família</h2>
+        <p class="muted">Entre com o acesso criado pelo administrador.</p>
+        <div class="field"><label>E-mail</label><input id="email" class="input" type="email" autocomplete="email"></div>
+        <div class="field"><label>Senha</label><input id="password" class="input" type="password" autocomplete="current-password"></div>
+        <button class="btn btn-primary btn-lg w-full" style="margin-top:18px" onclick="signIn()">Entrar</button>
+        <button class="btn btn-soft w-full" style="margin-top:10px" onclick="resetPassword()">Esqueci minha senha</button>
+        <p id="authMsg" class="muted" style="font-size:12px;margin-top:14px"></p>
+      </div>
+    </section>
+  </div>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="logo"><span class="logo-mark">F</span> FINANOUSE</div>
+      <div class="family-pill"><small>Família ativa</small><strong id="familyName">Carregando...</strong></div>
+      <nav id="nav" class="nav"></nav>
+      <div class="sidebar-bottom">
+        <div class="quick-card">
+          <strong>Finanças organizadas.</strong>
+          <p>Mais clareza para decidir e conquistar juntos.</p>
+          <button class="btn btn-accent" onclick="openQuickTransaction()">＋ Nova transação</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="search">⌕ <input id="globalSearch" placeholder="Buscar transações, dívidas ou metas..." oninput="runSearch(this.value)"></div>
+        <div class="top-actions">
+          <button class="icon-btn" title="Atualizar" onclick="loadAll()">↻</button>
+          <div class="profile">
+            <span id="avatar" class="avatar">R</span>
+            <div><strong id="profileName">Usuário</strong><small id="profileRole">Membro</small></div>
+          </div>
+          <button class="icon-btn" title="Sair" onclick="signOut()">↪</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section id="dashboard" class="section active"></section>
+        <section id="transactions" class="section"></section>
+        <section id="planning" class="section"></section>
+        <section id="goals" class="section"></section>
+        <section id="debts" class="section"></section>
+        <section id="accounts" class="section"></section>
+        <section id="reports" class="section"></section>
+        <section id="members" class="section"></section>
+        <section id="admin" class="section"></section>
+        <section id="settingsPage" class="section"></section>
+      </div>
+    </main>
+
+    <nav id="mobileNav" class="mobile-nav"></nav>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="assets/app.js"></script>
+</body>
+</html>
