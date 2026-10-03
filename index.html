@@ -40,7 +40,7 @@
   </div>
 
   <div id="appView" class="app-shell hidden">
-    <aside class="sidebar">
+    <aside id="sidebar" class="sidebar" aria-label="Menu principal"><button id="sidebarClose" class="sidebar-close" type="button" aria-label="Fechar menu">×</button>
       <div class="logo"><span class="logo-mark">F</span> FINANOUSE</div>
       <div class="family-pill"><small>Família ativa</small><strong id="familyName">Carregando...</strong></div>
       <nav id="nav" class="nav"></nav>
@@ -54,7 +54,7 @@
     </aside>
 
     <main class="main">
-      <header class="topbar">
+      <header class="topbar"><button id="mobileMenuButton" class="mobile-menu-button" type="button" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">☰</button>
         <div class="search">⌕ <input id="globalSearch" placeholder="Buscar transações, dívidas ou metas..." oninput="runSearch(this.value)"></div>
         <div class="top-actions">
           <button class="icon-btn" title="Atualizar" onclick="loadAll()">↻</button>
@@ -80,10 +80,10 @@
       </div>
     </main>
 
-    <nav id="mobileNav" class="mobile-nav"></nav>
+    <nav id="mobileNav" class="mobile-nav"></nav><button id="sidebarOverlay" class="sidebar-overlay" type="button" aria-label="Fechar menu"></button>
   </div>
 
   <div id="modal" class="modal"><div class="box"><div id="modalContent"></div></div></div><div id="toast" class="toast hidden"></div>
-  <script src="assets/app.js"></script><script src="assets/legacy-core.js"></script><script src="assets/legacy-ui.js"></script><script src="assets/legacy-actions.js"></script>
+  <script src="assets/app.js"></script><script src="assets/legacy-core.js"></script><script src="assets/legacy-ui.js"></script><script src="assets/legacy-actions.js"></script><script src="assets/mobile.js"></script>
 </body>
 </html>
